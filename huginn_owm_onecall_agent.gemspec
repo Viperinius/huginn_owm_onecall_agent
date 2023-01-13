@@ -8,10 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Viperinius"]
   spec.email         = ["viperinius@gmx.de"]
 
-  spec.summary       = %q{Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{Write a longer description or delete this line.}
+  spec.summary       = %q{huginn agent to query the OpenWeatherMap OneCall API}
+  spec.description   = %q{}
 
-  spec.homepage      = "https://github.com/[my-github-username]/huginn_owm_onecall_agent"
+  spec.homepage      = "https://github.com/Viperinius/huginn_owm_onecall_agent"
 
   spec.license       = "MIT"
 
