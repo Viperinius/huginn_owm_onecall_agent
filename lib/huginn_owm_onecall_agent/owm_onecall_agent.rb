@@ -156,7 +156,6 @@ module Agents
         'units' => 'metric',
         'language' => 'en',
 
-        'emit_events' => 'false',
         'expected_update_period_in_days' => '1'
       }
     end
@@ -172,20 +171,37 @@ module Agents
       errors.add(:base, "longitude value is invalid") unless options['longitude'].to_i > -180 && options['longitude'].to_i < 180
       
       if options['units'].present?
-        errors.add(:base, "") unless %w(metric standard imperial).include?(interpolated['units'])
+        errors.add(:base, "units contains invalid value") unless %w(metric standard imperial).include?(interpolated['units'])
       end
       
       # TODO: add validation of language
+      
+      unless options['expected_update_period_in_days'].present? && options['expected_update_period_in_days'].to_i > 0
+        errors.add(:base, "Please provide 'expected_update_period_in_days' to indicate how many days can pass without an update before this Agent is considered to not be working")
+      end
     end
 
     def working?
       event_created_within?((interpolated['expected_update_period_in_days'].presence || 10).to_i) && !recent_error_logs?
     end
 
-#    def check
-#    end
-
-#    def receive(incoming_events)
-#    end
+    def check
+      response = query_owm_onecall()
+      if response.kind_of? Net::HTTPSuccess
+        create_event :payload => response.body
+      end
+    end
+    
+    OWM_BASE_URI = "https://api.openweathermap.org/data/2.5"
+    OWM_ONECALL_ENDPOINT = "/onecall"
+    
+    def query_owm_onecall()
+      url = URI.parse("#{OWM_BASE_URI}#{OWM_ONECALL_ENDPOINT}?lat=#{interpolated['latitude']}" + 
+                                                            "&lon=#{interpolated['longitude']}" +
+                                                            "&units=#{interpolated['units']}" +
+                                                            "&lang=#{interpolated['language']}"+
+                                                            "&APPID=#{interpolated['api_key']}")
+      Net::HTTP.get_response(url)
+    end
   end
 end
