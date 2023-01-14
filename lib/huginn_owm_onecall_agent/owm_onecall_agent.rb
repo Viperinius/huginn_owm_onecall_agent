@@ -26,6 +26,7 @@ module Agents
     
     event_description <<-MD
       Events look like this:
+      
         {
           "lat": 33.44,
           "lon": -94.04,
@@ -156,7 +157,8 @@ module Agents
         'units' => 'metric',
         'language' => 'en',
 
-        'expected_update_period_in_days' => '1'
+        'expected_update_period_in_days' => '1',
+        'debug' => 'false'
       }
     end
 
@@ -179,6 +181,10 @@ module Agents
       unless options['expected_update_period_in_days'].present? && options['expected_update_period_in_days'].to_i > 0
         errors.add(:base, "Please provide 'expected_update_period_in_days' to indicate how many days can pass without an update before this Agent is considered to not be working")
       end
+      
+      if options['debug'].present?
+        errors.add(:base, "debug contains invalid value") unless !boolify(options['debug']).nil?
+      end
     end
 
     def working?
@@ -187,7 +193,10 @@ module Agents
 
     def check
       response = query_owm_onecall()
+      log "response status code: #{response.code}" if interpolated['debug'] == 'true'
+      
       if response.kind_of? Net::HTTPSuccess
+        log "response body: #{response.body}" if interpolated['debug'] == 'true'
         create_event :payload => response.body
       end
     end
