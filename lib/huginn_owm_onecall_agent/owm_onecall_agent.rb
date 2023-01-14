@@ -8,6 +8,7 @@ module Agents
       The OWM OneCall Agent queries the OneCall API of [OpenWeatherMap](https://openweathermap.org/) for a given location by `latitude` and `longitude`.
       
       This API returns information about:
+      
       * Current weather
       * Minutely forecast
       * Hourly forecast
@@ -15,6 +16,7 @@ module Agents
       * National weather alerts
       
       Options:
+      
       * `api_key` - Your API key for OpenWeatherMap
       * `latitude` - Part of the geographical coordinates of the targeted location
       * `longitude` - Part of the geographical coordinates of the targeted location
@@ -155,15 +157,29 @@ module Agents
         'language' => 'en',
 
         'emit_events' => 'false',
-        'expected_receive_period_in_days' => '1'
+        'expected_update_period_in_days' => '1'
       }
     end
 
     def validate_options
+      errors.add(:base, "api_key is required") unless options['api_key'].present?
+      errors.add(:base, "api_key must be valid (hex string)") unless /^[0-9a-fA-F]+$/.match?(interpolated['api_key'])
+      
+      errors.add(:base, "latitude is required") unless options['latitude'].present?
+      errors.add(:base, "latitude value is invalid") unless options['latitude'].to_i > -90 && options['latitude'].to_i < 90
+      
+      errors.add(:base, "longitude is required") unless options['longitude'].present?
+      errors.add(:base, "longitude value is invalid") unless options['longitude'].to_i > -180 && options['longitude'].to_i < 180
+      
+      if options['units'].present?
+        errors.add(:base, "") unless %w(metric standard imperial).include?(interpolated['units'])
+      end
+      
+      # TODO: add validation of language
     end
 
     def working?
-      event_created_within?((interpolated['expected_receive_period_in_days'].presence || 10).to_i) && !recent_error_logs?
+      event_created_within?((interpolated['expected_update_period_in_days'].presence || 10).to_i) && !recent_error_logs?
     end
 
 #    def check
