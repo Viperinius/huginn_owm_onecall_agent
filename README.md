@@ -1,8 +1,14 @@
 # OwmOnecallAgent
 
-Welcome to your new agent gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/huginn_owm_onecall_agent`. To experiment with that code, run `bin/console` for an interactive prompt.
+The OWM OneCall Agent queries the OneCall API of [OpenWeatherMap](https://openweathermap.org/) for a given location by `latitude` and `longitude`.
+      
+This API returns information about:
 
-TODO: Delete this and the text above, and describe your gem
+* Current weather
+* Minutely forecast
+* Hourly forecast
+* Daily forecast
+* National weather alerts
 
 ## Installation
 
@@ -11,9 +17,10 @@ This gem is run as part of the [Huginn](https://github.com/huginn/huginn) projec
 Add this string to your Huginn's .env `ADDITIONAL_GEMS` configuration:
 
 ```ruby
-huginn_owm_onecall_agent
+huginn_owm_onecall_agent(git: https://github.com/Viperinius/huginn_owm_onecall_agent.git)
+
 # when only using this agent gem it should look like this:
-ADDITIONAL_GEMS=huginn_owm_onecall_agent
+ADDITIONAL_GEMS=huginn_owm_onecall_agent(git: https://github.com/Viperinius/huginn_owm_onecall_agent.git)
 ```
 
 And then execute:
@@ -22,7 +29,9 @@ And then execute:
 
 ## Usage
 
-TODO: Write usage instructions here
+When creating a new agent instance, supply it with your OpenWeatherMap API key and the desired location using geographical coordinates (latitude and longitude).
+
+Optional: You can specify the returned language and units.
 
 ## Development
 
