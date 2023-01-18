@@ -173,6 +173,7 @@ module Agents
       end
     end
 
+    GROUP_TIMESTAMP = 'dt'
     GROUP_SUN = 'sun_moon'
     GROUP_TEMPERATURE = 'temperature'
     GROUP_PRECIPITATION = 'precipitation'
@@ -196,10 +197,10 @@ module Agents
       if event.payload['alerts'].present?
         event.payload['alerts'].each do |alert|
           alert_items = []
-          %w[sender_name start end].each do |key|
+          %w[start end].each do |key|
             alert_items.push("#{key}=#{alert[key]}") if alert[key].present?
           end
-          %w[event description].each do |key|
+          %w[sender_name event description].each do |key|
             alert_items.push("#{key}=\"#{alert[key]}\"") if alert[key].present?
           end
 
@@ -259,11 +260,13 @@ module Agents
     def stringify_default(data)
       groups = {}
 
+      groups["#{GROUP_TIMESTAMP}"] = data['dt'] if data['dt'].present?
+
       sun_items = []
       %w[sunrise sunset moonrise moonset moon_phase].each do |key|
         sun_items.push("#{key}=#{data[key]}") if data[key].present?
       end
-      groups["#{GROUP_SUN}"] = sun_items.join(',')
+      groups["#{GROUP_SUN}"] = sun_items.join(',') if sun_items.length > 0
 
       temp_items = []
       %w[temp feels_like dew_point].each do |key|
@@ -277,7 +280,7 @@ module Agents
           end
         end
       end
-      groups["#{GROUP_TEMPERATURE}"] = temp_items.join(',')
+      groups["#{GROUP_TEMPERATURE}"] = temp_items.join(',') if temp_items.length > 0
 
       precip_items = []
       %w[rain snow pop].each do |key|
@@ -291,13 +294,13 @@ module Agents
           precip_items.push("#{key}=0") 
         end
       end
-      groups["#{GROUP_PRECIPITATION}"] = precip_items.join(',')
+      groups["#{GROUP_PRECIPITATION}"] = precip_items.join(',') if precip_items.length > 0
 
       wind_items = []
       %w[wind_speed wind_deg wind_gust].each do |key|
         wind_items.push("#{key}=#{data[key]}") if data[key].present?
       end
-      groups["#{GROUP_WIND}"] = wind_items.join(',')
+      groups["#{GROUP_WIND}"] = wind_items.join(',') if wind_items.length > 0
 
       weather_items = []
       if data['weather'].present? && data['weather'].length > 0
@@ -308,13 +311,13 @@ module Agents
           weather_items.push("#{key}=\"#{data['weather'][0][key]}\"") if data['weather'][0][key].present?
         end
       end
-      groups["#{GROUP_WEATHER}"] = weather_items.join(',')
+      groups["#{GROUP_WEATHER}"] = weather_items.join(',') if weather_items.length > 0
 
       other_items = []
       %w[pressure humidity clouds visibility uvi].each do |key|
         other_items.push("#{key}=#{data[key]}") if data[key].present?
       end
-      groups["#{GROUP_OTHER}"] = other_items.join(',')
+      groups["#{GROUP_OTHER}"] = other_items.join(',') if other_items.length > 0
 
       groups
     end
