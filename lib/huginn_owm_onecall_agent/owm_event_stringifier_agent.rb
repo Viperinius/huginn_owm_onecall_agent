@@ -196,8 +196,11 @@ module Agents
       if event.payload['alerts'].present?
         event.payload['alerts'].each do |alert|
           alert_items = []
-          %w[sender_name event start end description].each do |key|
+          %w[sender_name start end].each do |key|
             alert_items.push("#{key}=#{alert[key]}") if alert[key].present?
+          end
+          %w[event description].each do |key|
+            alert_items.push("#{key}=\"#{alert[key]}\"") if alert[key].present?
           end
 
           # TODO: include tags as well?
@@ -227,35 +230,35 @@ module Agents
     end
 
     def stringify_current(event)
-      { 'str_current': stringify_default(event) }
+      { 'str_current': stringify_default(event.payload['current']) }
     end
 
     def stringify_hourly(event)
-      { 'str_hourly': stringify_default(event) }
+      { 'str_hourly': stringify_default(event.payload['hourly']) }
     end
 
     def stringify_daily(event)
-      { 'str_daily': stringify_default(event) }
+      { 'str_daily': stringify_default(event.payload['daily']) }
     end
 
     # ###################################
-    def stringify_default(event)
+    def stringify_default(data)
       groups = {}
 
       sun_items = []
       %w[sunrise sunset moonrise moonset moon_phase].each do |key|
-        sun_items.push("#{key}=#{event.payload[key]}") if event.payload[key].present?
+        sun_items.push("#{key}=#{data[key]}") if data[key].present?
       end
       groups["#{GROUP_SUN}"] = sun_items.join(',')
 
       temp_items = []
       %w[temp feels_like dew_point].each do |key|
-        if event.payload[key].present?
-          if event.payload[key].kind_of? String
-            temp_items.push("#{key}=#{event.payload[key]}")
+        if data[key].present?
+          if data[key].kind_of? String
+            temp_items.push("#{key}=#{data[key]}")
           else
             %w[morn day eve night min max].each do |inner_key|
-              temp_items.push("#{key}_#{inner_key}=#{event.payload[key][inner_key]}") if event.payload[key][inner_key].present?
+              temp_items.push("#{key}_#{inner_key}=#{data[key][inner_key]}") if data[key][inner_key].present?
             end
           end
         end
@@ -264,11 +267,11 @@ module Agents
 
       precip_items = []
       %w[rain snow pop].each do |key|
-        if event.payload[key].present?
-          if event.payload[key]['1h'].present?
-            precip_items.push("#{key}=#{event.payload[key]['1h']}")
+        if data[key].present?
+          if data[key]['1h'].present?
+            precip_items.push("#{key}=#{data[key]['1h']}")
           else
-            precip_items.push("#{key}=#{event.payload[key]}")
+            precip_items.push("#{key}=#{data[key]}")
           end
         else
           precip_items.push("#{key}=0") 
@@ -278,21 +281,21 @@ module Agents
 
       wind_items = []
       %w[wind_speed wind_deg wind_gust].each do |key|
-        wind_items.push("#{key}=#{event.payload[key]}") if event.payload[key].present?
+        wind_items.push("#{key}=#{data[key]}") if data[key].present?
       end
       groups["#{GROUP_WIND}"] = wind_items.join(',')
 
       weather_items = []
-      if event.payload['weather'].present? && event.payload['weather'].length > 0
+      if data['weather'].present? && data['weather'].length > 0
         %w[id main description icon].each do |key|
-          weather_items.push("#{key}=#{event.payload['weather'][0][key]}") if event.payload['weather'][0][key].present?
+          weather_items.push("#{key}=#{data['weather'][0][key]}") if data['weather'][0][key].present?
         end
       end
       groups["#{GROUP_WEATHER}"] = weather_items.join(',')
 
       other_items = []
       %w[pressure humidity clouds visibility uvi].each do |key|
-        other_items.push("#{key}=#{event.payload[key]}") if event.payload[key].present?
+        other_items.push("#{key}=#{data[key]}") if data[key].present?
       end
       groups["#{GROUP_OTHER}"] = other_items.join(',')
 
