@@ -234,11 +234,25 @@ module Agents
     end
 
     def stringify_hourly(event)
-      { 'str_hourly': stringify_default(event.payload['hourly']) }
+      hourly = []
+      if event.payload['hourly'].present?
+        event.payload['hourly'].each do |point|
+          hourly.push(stringify_default(point))
+        end
+      end
+
+      { 'str_hourly': hourly }
     end
 
     def stringify_daily(event)
-      { 'str_daily': stringify_default(event.payload['daily']) }
+      daily = []
+      if event.payload['daily'].present?
+        event.payload['daily'].each do |point|
+          daily.push(stringify_default(point))
+        end
+      end
+
+      { 'str_daily': daily }
     end
 
     # ###################################
@@ -287,8 +301,11 @@ module Agents
 
       weather_items = []
       if data['weather'].present? && data['weather'].length > 0
-        %w[id main description icon].each do |key|
+        %w[id main icon].each do |key|
           weather_items.push("#{key}=#{data['weather'][0][key]}") if data['weather'][0][key].present?
+        end
+        %w[description].each do |key|
+          weather_items.push("#{key}=\"#{data['weather'][0][key]}\"") if data['weather'][0][key].present?
         end
       end
       groups["#{GROUP_WEATHER}"] = weather_items.join(',')
