@@ -254,7 +254,7 @@ module Agents
       temp_items = []
       %w[temp feels_like dew_point].each do |key|
         if data[key].present?
-          if data[key].kind_of? String
+          if data[key].kind_of? Hash
             temp_items.push("#{key}=#{data[key]}")
           else
             %w[morn day eve night min max].each do |inner_key|
@@ -268,7 +268,7 @@ module Agents
       precip_items = []
       %w[rain snow pop].each do |key|
         if data[key].present?
-          if data[key]['1h'].present?
+          if data[key].kind_of? Hash && data[key]['1h'].present?
             precip_items.push("#{key}=#{data[key]['1h']}")
           else
             precip_items.push("#{key}=#{data[key]}")
