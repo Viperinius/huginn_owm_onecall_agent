@@ -255,11 +255,11 @@ module Agents
       %w[temp feels_like dew_point].each do |key|
         if data[key].present?
           if data[key].kind_of? Hash
-            temp_items.push("#{key}=#{data[key]}")
-          else
             %w[morn day eve night min max].each do |inner_key|
               temp_items.push("#{key}_#{inner_key}=#{data[key][inner_key]}") if data[key][inner_key].present?
             end
+          else
+            temp_items.push("#{key}=#{data[key]}")
           end
         end
       end
